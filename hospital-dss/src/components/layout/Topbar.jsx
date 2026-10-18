@@ -1,12 +1,22 @@
+import { useEffect, useState } from 'react'
 import { Search, Bell, ChevronDown, Menu } from 'lucide-react'
 import { useAuth } from '@/contexts/AuthContext'
 import { useUI } from '@/contexts/UIContext'
-import { alerts } from '@/data/mockData'
+import { dashboardService } from '@/services/dashboard'
 
 export function Topbar() {
   const { user } = useAuth()
   const { openMobileSidebar } = useUI()
-  const criticalCount = alerts.filter((a) => a.severity === 'critical').length
+  const [criticalCount, setCriticalCount] = useState(0)
+
+  useEffect(() => {
+    dashboardService
+      .kpis()
+      .then((kpis) => setCriticalCount(kpis.pendingAlerts?.value ?? 0))
+      .catch(() => setCriticalCount(0))
+  }, [])
+
+  if (!user) return null
 
   return (
     <header className="h-16 border-b border-line bg-panel flex items-center justify-between px-3 sm:px-6 gap-2 sm:gap-4">

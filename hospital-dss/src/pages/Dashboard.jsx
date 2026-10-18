@@ -1,4 +1,6 @@
-import { kpis } from '@/data/mockData'
+import { useEffect, useState } from 'react'
+import { dashboardService } from '@/services/dashboard'
+import { formatRelativeTime } from '@/lib/formatRelativeTime'
 import { KpiCard } from '@/components/dashboard/KpiCard'
 import { DepartmentLoad } from '@/components/dashboard/DepartmentLoad'
 import { AdmissionsTrendChart } from '@/components/dashboard/AdmissionsTrendChart'
@@ -15,11 +17,55 @@ const KPI_CONFIG = [
 ]
 
 export default function Dashboard() {
+  const [kpis, setKpis] = useState({})
+  const [admissionsTrend, setAdmissionsTrend] = useState([])
+  const [diagnoses, setDiagnoses] = useState([])
+  const [departments, setDepartments] = useState([])
+  const [alerts, setAlerts] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
+
+  useEffect(() => {
+    let cancelled = false
+
+    Promise.all([
+      dashboardService.kpis(),
+      dashboardService.admissionsTrend(),
+      dashboardService.diagnoses(),
+      dashboardService.departmentLoad(),
+      dashboardService.alerts(),
+    ])
+      .then(([kpisRes, trendRes, diagnosesRes, deptRes, alertsRes]) => {
+        if (cancelled) return
+        setKpis(kpisRes)
+        // Postgres COUNT(*) comes back as text over the wire — coerce to numbers for recharts
+        setAdmissionsTrend(
+          trendRes.trend.map((t) => ({ ...t, admissions: Number(t.admissions), discharges: Number(t.discharges) }))
+        )
+        setDiagnoses(diagnosesRes.diagnoses)
+        setDepartments(deptRes.departments)
+        setAlerts(alertsRes.alerts.map((a) => ({ ...a, time: formatRelativeTime(a.created_at) })))
+      })
+      .catch((err) => !cancelled && setError(err.message || 'Could not load dashboard data'))
+      .finally(() => !cancelled && setLoading(false))
+
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
+  if (loading) {
+    return <p className="text-sm text-slate font-mono">Loading dashboard…</p>
+  }
+  if (error) {
+    return <p className="text-sm text-alert">{error}</p>
+  }
+
   return (
     <div className="space-y-6">
       <div>
         <h1 className="font-display text-xl font-semibold text-ink">Overview</h1>
-        <p className="text-sm text-slate mt-0.5">Hospital-wide status as of today, 09 Jul 2026</p>
+        <p className="text-sm text-slate mt-0.5">Hospital-wide status as of today</p>
       </div>
 
       <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-3">
@@ -30,14 +76,14 @@ export default function Dashboard() {
 
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-4">
         <div className="xl:col-span-2">
-          <AdmissionsTrendChart />
+          <AdmissionsTrendChart data={admissionsTrend} />
         </div>
-        <AlertsFeed />
+        <AlertsFeed alerts={alerts} />
       </div>
 
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
-        <DepartmentLoad />
-        <DiagnosisChart />
+        <DepartmentLoad data={departments} />
+        <DiagnosisChart data={diagnoses} />
       </div>
     </div>
   )

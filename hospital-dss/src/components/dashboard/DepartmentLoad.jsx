@@ -1,7 +1,6 @@
 import { Card, CardHeader, CardTitle, CardBody } from '@/components/ui/Card'
-import { departmentLoad } from '@/data/mockData'
 
-export function DepartmentLoad() {
+export function DepartmentLoad({ data = [] }) {
   return (
     <Card>
       <CardHeader>
@@ -9,8 +8,8 @@ export function DepartmentLoad() {
         <span className="text-xs text-slate font-mono">LIVE</span>
       </CardHeader>
       <CardBody className="space-y-3.5">
-        {departmentLoad.map((d) => {
-          const pct = Math.round((d.patients / d.capacity) * 100)
+        {data.map((d) => {
+          const pct = d.capacity > 0 ? Math.round((d.patients / d.capacity) * 100) : 0
           const isHigh = pct >= 85
           return (
             <div key={d.name}>

@@ -1,22 +1,51 @@
-import { createContext, useContext, useState, useCallback } from 'react'
-import { currentUser as mockUser } from '@/data/mockData'
+import { createContext, useContext, useState, useCallback, useEffect } from 'react'
+import { authService } from '@/services/auth'
 
 const AuthContext = createContext(null)
+const TOKEN_KEY = 'mediq_token'
 
 export function AuthProvider({ children }) {
-  const [user, setUser] = useState(mockUser)
-  const [isAuthenticated, setIsAuthenticated] = useState(true)
+  const [user, setUser] = useState(null)
+  const [isAuthenticated, setIsAuthenticated] = useState(false)
+  const [initializing, setInitializing] = useState(true)
 
-  const login = useCallback(async (credentials) => {
-    // TODO: replace with real API call to /api/auth/login
-    setUser(mockUser)
+  // On load, if a token is already stored, validate it against /auth/me instead of
+  // trusting it blindly — an expired/invalid token should send the user back to /login.
+  useEffect(() => {
+    const token = localStorage.getItem(TOKEN_KEY)
+    if (!token) {
+      setInitializing(false)
+      return
+    }
+    authService
+      .me()
+      .then(({ user }) => {
+        setUser(user)
+        setIsAuthenticated(true)
+      })
+      .catch(() => {
+        localStorage.removeItem(TOKEN_KEY)
+      })
+      .finally(() => setInitializing(false))
+  }, [])
+
+  const login = useCallback(async (email, password) => {
+    const { token, user } = await authService.login(email, password)
+    localStorage.setItem(TOKEN_KEY, token)
+    setUser(user)
     setIsAuthenticated(true)
-    return { success: true }
+    return user
   }, [])
 
   const logout = useCallback(() => {
+    localStorage.removeItem(TOKEN_KEY)
     setUser(null)
     setIsAuthenticated(false)
+  }, [])
+
+  const changePassword = useCallback(async (currentPassword, newPassword) => {
+    await authService.changePassword(currentPassword, newPassword)
+    setUser((u) => (u ? { ...u, mustResetPassword: false } : u))
   }, [])
 
   const hasRole = useCallback(
@@ -25,7 +54,9 @@ export function AuthProvider({ children }) {
   )
 
   return (
-    <AuthContext.Provider value={{ user, isAuthenticated, login, logout, hasRole }}>
+    <AuthContext.Provider
+      value={{ user, isAuthenticated, initializing, login, logout, changePassword, hasRole }}
+    >
       {children}
     </AuthContext.Provider>
   )

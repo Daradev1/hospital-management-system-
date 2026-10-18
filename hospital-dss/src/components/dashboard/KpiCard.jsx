@@ -2,7 +2,8 @@ import { Sparkline } from '@/components/ui/Sparkline'
 import { cn } from '@/lib/cn'
 
 export function KpiCard({ label, value, unit, trend, color = '#12405E', accent }) {
-  const delta = trend.length > 1 ? trend[trend.length - 1] - trend[trend.length - 2] : 0
+  const hasTrend = Array.isArray(trend) && trend.length > 1
+  const delta = hasTrend ? trend[trend.length - 1] - trend[trend.length - 2] : 0
   const isUp = delta > 0
 
   return (
@@ -13,17 +14,19 @@ export function KpiCard({ label, value, unit, trend, color = '#12405E', accent }
       </div>
       <div className="flex items-end justify-between">
         <div className="flex items-baseline gap-1">
-          <span className="font-display text-2xl font-semibold text-ink">{value}</span>
+          <span className="font-display text-2xl font-semibold text-ink">{value ?? '—'}</span>
           {unit && <span className="text-sm text-slate">{unit}</span>}
         </div>
-        <Sparkline data={trend} color={color} width={56} height={22} />
+        {hasTrend && <Sparkline data={trend} color={color} width={56} height={22} />}
       </div>
-      <div className="flex items-center gap-1 text-xs">
-        <span className={isUp ? 'text-signal' : 'text-alert'}>
-          {isUp ? '↑' : '↓'} {Math.abs(delta).toFixed(1)}
-        </span>
-        <span className="text-slate">vs yesterday</span>
-      </div>
+      {hasTrend && (
+        <div className="flex items-center gap-1 text-xs">
+          <span className={isUp ? 'text-signal' : 'text-alert'}>
+            {isUp ? '↑' : '↓'} {Math.abs(delta).toFixed(1)}
+          </span>
+          <span className="text-slate">vs yesterday</span>
+        </div>
+      )}
     </div>
   )
 }

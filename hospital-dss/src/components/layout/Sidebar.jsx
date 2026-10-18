@@ -14,19 +14,23 @@ import {
 } from 'lucide-react'
 import { cn } from '@/lib/cn'
 import { useUI } from '@/contexts/UIContext'
+import { useAuth } from '@/contexts/AuthContext'
 
+// roles: undefined = visible to everyone; otherwise restricted to the listed roles
 const NAV_ITEMS = [
   { to: '/', label: 'Overview', icon: LayoutDashboard, end: true },
   { to: '/patients', label: 'Patients', icon: Users },
   { to: '/appointments', label: 'Appointments', icon: CalendarClock },
-  { to: '/staff', label: 'Staff', icon: Stethoscope },
+  { to: '/staff', label: 'Staff', icon: Stethoscope, roles: ['admin'] },
   { to: '/pharmacy', label: 'Pharmacy', icon: Pill },
-  { to: '/billing', label: 'Billing', icon: Receipt },
+  { to: '/billing', label: 'Billing', icon: Receipt, roles: ['admin', 'billing'] },
   { to: '/analytics', label: 'Analytics', icon: BarChart3 },
 ]
 
 export function Sidebar() {
   const { sidebarCollapsed, toggleSidebar, mobileSidebarOpen, closeMobileSidebar } = useUI()
+  const { hasRole } = useAuth()
+  const visibleNavItems = NAV_ITEMS.filter((item) => !item.roles || hasRole(...item.roles))
 
   return (
     <>
@@ -67,7 +71,7 @@ export function Sidebar() {
         </div>
 
         <nav className="flex-1 py-4 px-2.5 space-y-0.5 overflow-y-auto">
-          {NAV_ITEMS.map(({ to, label, icon: Icon, end }) => (
+          {visibleNavItems.map(({ to, label, icon: Icon, end }) => (
             <NavLink
               key={to}
               to={to}

@@ -3,6 +3,7 @@ import { AppLayout } from '@/components/layout/AppLayout'
 import { useAuth } from '@/contexts/AuthContext'
 
 import Login from '@/pages/Login'
+import ChangePassword from '@/pages/ChangePassword'
 import Dashboard from '@/pages/Dashboard'
 import Patients from '@/pages/Patients'
 import Appointments from '@/pages/Appointments'
@@ -12,9 +13,19 @@ import Billing from '@/pages/Billing'
 import Analytics from '@/pages/Analytics'
 import Settings from '@/pages/Settings'
 
+function FullScreenLoader() {
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-surface">
+      <p className="text-sm text-slate font-mono">Loading…</p>
+    </div>
+  )
+}
+
 function ProtectedRoute({ children }) {
-  const { isAuthenticated } = useAuth()
+  const { isAuthenticated, initializing, user } = useAuth()
+  if (initializing) return <FullScreenLoader />
   if (!isAuthenticated) return <Navigate to="/login" replace />
+  if (user?.mustResetPassword) return <Navigate to="/change-password" replace />
   return children
 }
 
@@ -22,6 +33,7 @@ export default function App() {
   return (
     <Routes>
       <Route path="/login" element={<Login />} />
+      <Route path="/change-password" element={<ChangePassword />} />
 
       <Route
         path="/"

@@ -1,4 +1,5 @@
-import { kpis } from '@/data/mockData'
+import { useEffect, useState } from 'react'
+import { dashboardService } from '@/services/dashboard'
 import { Sparkline } from '@/components/ui/Sparkline'
 
 const ITEMS = [
@@ -11,6 +12,15 @@ const ITEMS = [
 ]
 
 export function VitalsStrip() {
+  const [kpis, setKpis] = useState({})
+
+  useEffect(() => {
+    dashboardService
+      .kpis()
+      .then(setKpis)
+      .catch(() => setKpis({}))
+  }, [])
+
   return (
     <div className="h-11 bg-ink/[0.03] border-b border-line px-3 sm:px-6 flex items-center gap-5 sm:gap-8 overflow-x-auto [scrollbar-width:thin]">
       {ITEMS.map(({ key, label, color }) => {
@@ -19,10 +29,9 @@ export function VitalsStrip() {
           <div key={key} className="flex items-center gap-2.5 shrink-0">
             <span className="text-[10px] font-mono tracking-wider text-slate">{label}</span>
             <span className="text-sm font-mono font-medium text-ink">
-              {d.value}
-              {d.unit}
+              {d ? `${d.value}${d.unit}` : '—'}
             </span>
-            <Sparkline data={d.trend} color={color} width={44} height={16} />
+            {d?.trend && <Sparkline data={d.trend} color={color} width={44} height={16} />}
           </div>
         )
       })}

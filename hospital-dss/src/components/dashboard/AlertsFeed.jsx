@@ -1,6 +1,5 @@
 import { AlertTriangle, AlertCircle, Info } from 'lucide-react'
 import { Card, CardHeader, CardTitle, CardBody } from '@/components/ui/Card'
-import { alerts } from '@/data/mockData'
 import { cn } from '@/lib/cn'
 
 const SEVERITY_CONFIG = {
@@ -9,7 +8,7 @@ const SEVERITY_CONFIG = {
   info: { icon: Info, color: 'text-primary', bg: 'bg-primary/10' },
 }
 
-export function AlertsFeed() {
+export function AlertsFeed({ alerts = [] }) {
   return (
     <Card>
       <CardHeader>
@@ -18,7 +17,7 @@ export function AlertsFeed() {
       </CardHeader>
       <CardBody className="space-y-1 max-h-80 overflow-y-auto">
         {alerts.map((alert) => {
-          const { icon: Icon, color, bg } = SEVERITY_CONFIG[alert.severity]
+          const { icon: Icon, color, bg } = SEVERITY_CONFIG[alert.severity] || SEVERITY_CONFIG.info
           return (
             <div key={alert.id} className="flex items-start gap-3 py-2.5 border-b border-line last:border-0">
               <div className={cn('w-7 h-7 rounded-md flex items-center justify-center shrink-0', bg)}>

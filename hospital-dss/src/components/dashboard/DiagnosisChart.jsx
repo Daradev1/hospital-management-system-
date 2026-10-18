@@ -1,10 +1,9 @@
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts'
 import { Card, CardHeader, CardTitle, CardBody } from '@/components/ui/Card'
-import { diagnosisFrequency } from '@/data/mockData'
 
 const COLORS = ['#12405E', '#1B5E82', '#1FA98A', '#C98A2C', '#8A94A6', '#C4534A']
 
-export function DiagnosisChart() {
+export function DiagnosisChart({ data = [] }) {
   return (
     <Card>
       <CardHeader>
@@ -12,7 +11,7 @@ export function DiagnosisChart() {
       </CardHeader>
       <CardBody className="h-72">
         <ResponsiveContainer width="100%" height="100%">
-          <BarChart data={diagnosisFrequency} layout="vertical" margin={{ top: 0, right: 16, left: 0, bottom: 0 }}>
+          <BarChart data={data} layout="vertical" margin={{ top: 0, right: 16, left: 0, bottom: 0 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="#E4E8EC" horizontal={false} />
             <XAxis type="number" tick={{ fontSize: 11, fontFamily: 'IBM Plex Mono', fill: '#8A94A6' }} axisLine={false} tickLine={false} />
             <YAxis
@@ -28,7 +27,7 @@ export function DiagnosisChart() {
               cursor={{ fill: '#F7F9F8' }}
             />
             <Bar dataKey="count" radius={[0, 4, 4, 0]} barSize={16}>
-              {diagnosisFrequency.map((_, i) => (
+              {data.map((_, i) => (
                 <Cell key={i} fill={COLORS[i % COLORS.length]} />
               ))}
             </Bar>

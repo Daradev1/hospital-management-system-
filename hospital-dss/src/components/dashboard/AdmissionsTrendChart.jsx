@@ -1,8 +1,7 @@
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts'
 import { Card, CardHeader, CardTitle, CardBody } from '@/components/ui/Card'
-import { admissionsTrend } from '@/data/mockData'
 
-export function AdmissionsTrendChart() {
+export function AdmissionsTrendChart({ data = [] }) {
   return (
     <Card>
       <CardHeader>
@@ -10,7 +9,7 @@ export function AdmissionsTrendChart() {
       </CardHeader>
       <CardBody className="h-72">
         <ResponsiveContainer width="100%" height="100%">
-          <LineChart data={admissionsTrend} margin={{ top: 8, right: 12, left: -12, bottom: 0 }}>
+          <LineChart data={data} margin={{ top: 8, right: 12, left: -12, bottom: 0 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="#E4E8EC" vertical={false} />
             <XAxis dataKey="day" tick={{ fontSize: 11, fontFamily: 'IBM Plex Mono', fill: '#8A94A6' }} axisLine={{ stroke: '#E4E8EC' }} tickLine={false} />
             <YAxis tick={{ fontSize: 11, fontFamily: 'IBM Plex Mono', fill: '#8A94A6' }} axisLine={false} tickLine={false} />
