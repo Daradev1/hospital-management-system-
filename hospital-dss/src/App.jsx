@@ -3,7 +3,7 @@ import { AppLayout } from '@/components/layout/AppLayout'
 import { useAuth } from '@/contexts/AuthContext'
 
 import Login from '@/pages/Login'
-import ChangePassword from '@/pages/ChangePassword'
+import ChangePassword from "@/pages/changePassword.jsx";
 import Dashboard from '@/pages/Dashboard'
 import Patients from '@/pages/Patients'
 import Appointments from '@/pages/Appointments'
